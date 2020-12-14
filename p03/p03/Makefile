@@ -1,21 +1,21 @@
-# Makefile for parser
+# Makefile for my_parser
 
-parser: lexer.cmo parser.cmo main.cmo
-	ocamlc -o parser lexer.cmo parser.cmo main.cmo
+my_parser: lexer.cmo my_parser.cmo main.cmo
+	ocamlc -o my_parser lexer.cmo my_parser.cmo main.cmo
 lexer.cmo: lexer.ml
 	ocamlc -c lexer.ml
-parser.cmo: parser.ml
-	ocamlc -c parser.ml
+my_parser.cmo: my_parser.ml
+	ocamlc -c my_parser.ml
 main.cmo: main.ml
 	ocamlc -c main.ml
-lexer.ml: parser.cmi lexer.mll
+lexer.ml: my_parser.cmi lexer.mll
 	ocamllex lexer.mll
-parser.cmi: parser.mli
-	ocamlc -c parser.mli
-parser.mli: parser.mly
-	ocamlyacc parser.mly
-parser.ml: parser.mly
-	ocamlyacc parser.mly
+my_parser.cmi: my_parser.mli
+	ocamlc -c my_parser.mli
+my_parser.mli: my_parser.mly
+	ocamlyacc my_parser.mly
+my_parser.ml: my_parser.mly
+	ocamlyacc my_parser.mly
 clean:
 	@echo $(DELIM) Cleaning up... $(DELIM)
-	@rm -f *.cmo *.cmi *.mli parser parser.ml lexer.ml
+	@rm -f *.cmo *.cmi *.mli my_parser my_parser.ml lexer.ml

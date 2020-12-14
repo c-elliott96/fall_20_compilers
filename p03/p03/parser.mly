@@ -10,8 +10,6 @@
 
 	let inc_line line_num = line_num := !line_num + 1
 
-	
-	
 	let add_id_tbl typ id = 
 		if (Hashtbl.mem dec_tbl id) then 
 			(raise Parsing.Parse_error (printf "**Error** %d: Redefinition of %s\n" !line_num id)) else
@@ -20,9 +18,11 @@
 		| "STRING" -> Hashtbl.add dec_tbl id "STR"
 		| "REAL" -> Hashtbl.add dec_tbl id "REA")
 
-	let assign_val id v = 
-		if Hashtbl.mem dec_tbl id then (Hashtbl.add val_tbl id v) else 
-		( raise Parsing.Parse_error (printf "**Error** %d: Use of undeclared identifier %s\n" !line_num id) )
+	let assign_int id v = 
+		if ((Hashtbl.find dec_tbl id) <> "INT") then (* wrong type in table *) 
+			(let start_pos = Parsing.rhs_start_pos 3 in 
+				raise Parser.Parse_error "**Error** %d: Cannot store non-int value in %s" start_pos.pos_lnum id)
+		else (Hashtbl.add val_tbl id v)
 
 	let lookup_id id = if Hashtbl.mem dec_tbl id then (
 			let typ = Hashtbl.find dec_tbl id in
@@ -61,14 +61,17 @@ whitespace: WHITESPACE { }
 | WHITESPACE whitespace { }
 ;
 
-declarations: TYPE ID SEMI { add_id_tbl $1 $2 }
-| TYPE ID SEMI NEWLINE declarations { add_id_tbl $1 $2 }
+declaration: TYPE ID SEMI { add_id_tbl $1 $2 }
+| TYPE ID SEMI NEWLINE declaration { add_id_tbl $1 $2 }
 ;
 
-assignment: ID ASSIGNMENT_OP expr SEMI { assign_val $1 $3 }
+assignment: ID ASSIGNMENT_OP INT SEMI { assign_int $1  }
+| ID ASSIGNMENT_OP STRING_LIT SEMI { }
+| ID ASSIGNMENT_OP FLOAT SEMI { }
+/* | ID ASSIGNMENT_OP expr SEMI { } */
 ;
 
-write: WRITE expr { printf "%s" $2 }
+write: WRITE expr SEMI { printf "%s\n" $2 }
 ;
 
 expr: ID { lookup_id $1 }
@@ -99,5 +102,5 @@ body: assignment { }
 | body { }
 ;
 
-program: PROGRAM whitespace declarations whitespace BEGIN body END SEMI { }
+program: PROGRAM whitespace declaration whitespace BEGIN body END SEMI { }
 ;
